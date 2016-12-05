@@ -25,31 +25,73 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       google-map {
         height: 600px;
       }
-
+      google-map-marker.update{
+        transition: 0.5s;
+        transform: scale(2,2);
+      }
     </style>
 
     <div class="card">
       <div class="circle">1</div>
       <h1>View One</h1>
-      <google-map latitude="48.863743" longitude="2.344306" fit-to-markers>
-        <template is="dom-repeat" items="[[ajaxResponse.records]]">
-          <google-map-marker latitude="[[item.position[0]]]" longitude="[[item.position[1]]]"></google-map-marker>
-        </template>
-
-    </google-map>
-    <iron-ajax auto url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&facet=banking&facet=bonus&facet=status&facet=contract_name"
-    handle-as="json"
-    last-response="{{ajaxResponse}}"
-    on-response="handleResponse"
-    debounce-duration="300">
+      <iron-ajax auto url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&rows=250&facet=status&geofilter.distance=48.863743%2C2.344306%2C10000"
+      handle-as="json"
+      id="ajaxCall"
+      last-response="{{ajaxResponse}}"
+      on-response="handleResponse"
+      debounce-duration="300">
     </iron-ajax>
+      <google-map latitude="48.863743" longitude="2.344306" api-key="AIzaSyCMwoD7JpzLCf5VRKm1J9u8EPXAnTsLEg0" fit-to-markers>
+        <template is="dom-repeat" items="[[ajaxResponse.records]]">
+          <google-map-marker
+            icon="{{iconUrl(item.fields.available_bike_stands,item.fields.last_update)}}"
+            class$="{{isUpdated(item.fields.last_update}}"
+            latitude="[[item.fields.position.0]]"
+            longitude="[[item.fields.position.1]]">
+            {{item.fields.available_bike_stands}}<br/>
+            {{item.fields.last_update}}<br/>
+            {{lastPoll}}
+            <P>{{isUpdated(item.fields.last_update)}}</p>
+          </google-map-marker>
+        </template>
+    </google-map>
+    <div>
+        <p>{{ajaxResponse.records.0.fields.position.0}}</p>
+    </div>
 
     </div>
-  </template>
+    </template>
 
     <script>
         Polymer({
-            is: 'my-view1'
+            is: 'my-view1',
+            properties: {
+                lastPoll: {
+                    type: Object,
+                    value: new Date()
+                }
+            },
+            isUpdated: function(lastUpdate) {
+
+                var last = new Date(lastUpdate);
+                if (last > this.lastPoll) {
+                    console.log("lastUpdate", last, "lastPoll", this.lastPoll);
+                }
+                return last > this.lastPoll ? "update" : "";
+            },
+            handleResponse: function() {
+                console.log(this.ajaxResponse);
+                this.async(function() {
+                    this.$.ajaxCall.generateRequest();
+                    this.lastPoll = new Date()
+                    this.lastPoll.setSeconds(this.lastPoll.getSeconds()-20);
+                    console.log(this.lastPoll);
+                }, 20000);
+            },
+            iconUrl: function(i, lastUpdate) {
+                return this.isUpdated(lastUpdate) ? 'https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_blue' + i + '.png' : i ?
+                    'https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_green' + i + '.png' : null;
+            }
         });
     </script>
 </dom-module>
