@@ -22,7 +22,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       google-map {
-        height: 600px;
+        height: 100vh;
       }
       google-map-marker.update{
         transition: 0.5s;
@@ -32,20 +32,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .card {
         position: fixed;
-        bottom: 1rem;
-        right: 1rem;
+        bottom: 0.5rem;
+        right: 1.3rem;
       }
 
     </style>
 
-      <iron-ajax auto url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&rows={{maxRows}}&facet=status&geofilter.distance=48.863743%2C2.344306%2C20000"
+    <iron-ajax auto 
+      url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&rows={{maxRows}}&facet=status&geofilter.distance=48.863743%2C2.344306%2C{{resultsRadius}}"
       handle-as="json"
       id="ajaxCall"
       last-response="{{ajaxResponse}}"
       on-response="handleResponse"
       debounce-duration="300">
     </iron-ajax>
-    <google-map latitude="48.863743" longitude="2.344306" api-key="AIzaSyCMwoD7JpzLCf5VRKm1J9u8EPXAnTsLEg0" fit-to-markers>
+    
+    <google-map-search 
+      map="[[map]]" 
+      query="{{mapCenterSearch}}" 
+      results="{{results}}" 
+      on-google-map-search-results="updateCenter">
+    </google-map-search>
+
+    <google-map map="{{map}}" latitude="48.863743" longitude="2.344306" api-key="AIzaSyCMwoD7JpzLCf5VRKm1J9u8EPXAnTsLEg0" fit-to-markers>
         <template is="dom-repeat" items="[[ajaxResponse.records]]">
           <google-map-marker
             icon="{{iconUrl(item.fields.available_bike_stands,item.fields.last_update)}}"
@@ -61,9 +70,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </template>
     </google-map>
 
-    <div class="card">
-      <paper-toggle-button on-change="toggleHideEmpty" class="full-width">Cacher les stations vides</paper-toggle-button>
-      <paper-input label="Nombre maximal de stations" value="{{maxRows}}" class="full-width"></paper-input>
+    <div class="card max-width-280">
+
+    <iron-collapse id="collapse" opened>
+      <div>
+        <paper-input label="Point central des résultats" value="{{mapCenterSearch}}" type="number" class="full-width">
+          <iron-icon icon="my-location" prefix></iron-icon>
+        </paper-input>
+        <paper-input label="Rayon des résultats (m)" value="{{resultsRadius}}" type="number" min=30 max=20000 class="full-width">
+          <iron-icon icon="radius" prefix></iron-icon>
+        </paper-input>
+        <paper-input label="Nombre maximal de stations" value="{{maxRows}}" type="number" min=2 max=10000 class="full-width">
+          <iron-icon icon="dots-number" prefix></iron-icon>
+        </paper-input>
+        <paper-toggle-button on-change="toggleHideEmpty" class="full-width">Cacher les stations vides</paper-toggle-button>
+        <br />
+        <paper-input label="Fréquence de polling (sec)" value="{{pollingFrequency}}" type="number" min=1 class="full-width">
+          <iron-icon icon="timer" prefix></iron-icon>
+        </paper-input>
+      </div>
+    </iron-collapse>
+
+    <paper-icon-button icon="drop-down" class="float-right" on-click="toggleCollapse" id="toggleButton"></paper-icon-button>
+    
     </div>
     </template>
 
@@ -83,7 +112,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             ready: function(){
                this.refreshLastPoll();
+
+               // --- Default settings ---
                this.maxRows = 300;
+               this.resultsRadius = 2000;
+               this.pollingFrequency = 5;
             },
 
             isUpdated: function(lastUpdate) {
@@ -94,7 +127,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.async(function() {
                     this.$.ajaxCall.generateRequest();
                     this.refreshLastPoll();
-                }, 5000);
+                }, this.pollingFrequency*1000);
             },
 
             iconUrl: function(i, lastUpdate) {
@@ -112,6 +145,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.lastPoll = d;
             },
 
+            updateCenter: function () {
+              console.log(this.results);
+            },
+
             hideEmptyStation: function(n) {
               return n == 0 && this.hideEmpty;
             },
@@ -119,6 +156,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             toggleHideEmpty: function(){
               console.log("toggleHideEmpty", this.hideEmpty);
               this.hideEmpty = !this.hideEmpty;
+            },
+
+            toggleCollapse: function() {
+              this.$.collapse.toggle();
+              this.$.toggleButton.icon = this.$.toggleButton.icon == "drop-down" ? "drop-up" : "drop-down";
             }
 
         });
