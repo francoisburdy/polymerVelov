@@ -27,6 +27,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       google-map-marker.update{
         transition: 0.5s;
         transform: scale(2,2);
+        border:3px solid pink;
       }
     </style>
 
@@ -41,18 +42,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <template is="dom-repeat" items="[[ajaxResponse.records]]">
           <google-map-marker
             icon="{{iconUrl(item.fields.available_bike_stands,item.fields.last_update)}}"
-            class$="{{isUpdated(item.fields.last_update}}"
             latitude="[[item.fields.position.0]]"
+            hidden$="[[hideEmptyStation(item.fields.available_bike_stands)]]"
             longitude="[[item.fields.position.1]]">
 
             {{item.fields.available_bike_stands}}<br/>
             {{item.fields.last_update}}<br/>
             
             
-            <p>{{isUpdated(item.fields.last_update)}}</p>
+            <p>[[isUpdated(item.fields.last_update)]]</p>
           </google-map-marker>
         </template>
     </google-map>
+
+    <div class="card">
+      <paper-toggle-button on-change="toggleHideEmpty">Cacher les stations vides</paper-toggle-button>
+    </div>
     </template>
 
     <script>
@@ -61,31 +66,53 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             properties: {
                 lastPoll: {
                     type: Object,
-                    value: new Date()
+                    value: null
+                },
+                hideEmpty: {
+                    type: Boolean,
+                    value: false
                 }
             },
-            isUpdated: function(lastUpdate) {
-              if((new Date(lastUpdate)) >= this.lastPoll )
-                console.log(lastUpdate, this.lastPoll);
 
+            ready: function(){
+               this.refreshLastPoll();
+            },
+
+            isUpdated: function(lastUpdate) {
               return (new Date(lastUpdate)) >= this.lastPoll ? "update" : "not-update";
             },
+
             handleResponse: function() {
-                console.log(this.ajaxResponse);
                 this.async(function() {
                     this.$.ajaxCall.generateRequest();
-                    this.lastPoll = new Date();
-                    this.lastPoll.setSeconds(this.lastPoll.getSeconds()-160);
+                    this.refreshLastPoll();
                 }, 5000);
             },
+
             iconUrl: function(i, lastUpdate) {
 
               var char = i || '!';
-                return this.isUpdated(lastUpdate) == "update" ? 
+                return this.isUpdated(lastUpdate) == "update" && i > 0 ? 
                     'https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_blue' + char + '.png' : 
                     i ? 'https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_green' + char + '.png' : 
                     null;
+            },
+
+            refreshLastPoll: function(){
+                var d = new Date();
+                d.setSeconds(d.getSeconds()-150);
+                this.lastPoll = d;
+            },
+
+            hideEmptyStation: function(n) {
+              return n == 0 && this.hideEmpty;
+            },
+
+            toggleHideEmpty: function(){
+              console.log("toggleHideEmpty", this.hideEmpty);
+              this.hideEmpty = !this.hideEmpty;
             }
+
         });
     </script>
 </dom-module>
