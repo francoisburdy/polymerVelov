@@ -29,9 +29,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         transform: scale(2,2);
         border:3px solid pink;
       }
+
+      .card {
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+      }
+
     </style>
 
-      <iron-ajax auto url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&rows=300&facet=status&geofilter.distance=48.863743%2C2.344306%2C20000"
+      <iron-ajax auto url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&rows={{maxRows}}&facet=status&geofilter.distance=48.863743%2C2.344306%2C20000"
       handle-as="json"
       id="ajaxCall"
       last-response="{{ajaxResponse}}"
@@ -48,15 +55,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             {{item.fields.available_bike_stands}}<br/>
             {{item.fields.last_update}}<br/>
-            
-            
+ 
             <p>[[isUpdated(item.fields.last_update)]]</p>
           </google-map-marker>
         </template>
     </google-map>
 
     <div class="card">
-      <paper-toggle-button on-change="toggleHideEmpty">Cacher les stations vides</paper-toggle-button>
+      <paper-toggle-button on-change="toggleHideEmpty" class="full-width">Cacher les stations vides</paper-toggle-button>
+      <paper-input label="Nombre maximal de stations" value="{{maxRows}}" class="full-width"></paper-input>
     </div>
     </template>
 
@@ -76,6 +83,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             ready: function(){
                this.refreshLastPoll();
+               this.maxRows = 300;
             },
 
             isUpdated: function(lastUpdate) {

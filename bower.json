@@ -19,7 +19,8 @@
     "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",
     "google-map": "GoogleWebComponents/google-map#^1.1.14",
     "iron-icons": "PolymerElements/iron-icons#^1.2.0",
-    "paper-toggle-button": "PolymerElements/paper-toggle-button#^1.2.1"
+    "paper-toggle-button": "PolymerElements/paper-toggle-button#^1.2.1",
+    "paper-input": "PolymerElements/paper-input#^1.1.22"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
