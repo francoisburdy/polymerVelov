@@ -32,7 +32,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         --app-primary-color: #4285f4;
         --app-secondary-color: black;
-
         display: block;
       }
 
@@ -40,6 +39,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         color: #fff;
         background-color: var(--app-primary-color);
       }
+
       app-header paper-icon-button {
         --paper-icon-button-ink-color: white;
       }
@@ -62,8 +62,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .flex-end-align {
-        position: relative;
-        bottom: 2rem;
+        position: absolute;
+        bottom: 8rem;
+        color:gray;
+        padding:2em;
+        font-size:0.8em;
+      }
+
+      .flex-end-align a{
+        color:darkgray;
       }
 
     </style>
@@ -87,10 +94,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <a name="view3" href="/view3">View Three</a>
         </iron-selector>
         <div class="flex-end-align">
-          <ul>
-            <li>Burdy, Brun, Bayed, Zucaro, Crochon, El Majoudi</li>
-            <li>Inspired from <a href="https://github.com/polymerelements/polymer-starter-kit">PSK 2</a></li>
-          </ul>
+          <p>
+            <hr style="border-color:#eee" />
+            Burdy, Brun, Bayed, Zucaro, Crochon, El Majoudi.<br />
+            Inspired from <a href="https://github.com/polymerelements/polymer-starter-kit">PSK 2</a>.<br />
+            M2 MIAGE | IM²AG | janv 2017.
+          </p>
         </div>
       </app-drawer>
 
