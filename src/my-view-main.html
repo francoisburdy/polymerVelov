@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/iron-polling/iron-polling.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="my-view-main">
@@ -39,20 +40,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     </style>
 
-    <iron-ajax auto 
+    <iron-polling
       url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&rows={{maxRows}}&facet=status&geofilter.distance=48.863743%2C2.344306%2C{{resultsRadius}}"
-      handle-as="json"
-      id="ajaxCall"
       last-response="{{ajaxResponse}}"
-      on-response="handleResponse"
-      debounce-duration="300">
-    </iron-ajax>
+      on-response=""
+      polling-frequency="{{pollingFrequency}}"
+      handle-as="json">
+    </iron-polling>
+   
     
     <google-map-search 
       map="[[map]]" 
       query="{{mapCenterSearch}}" 
-      results="{{results}}" 
-      on-google-map-search-results="updateCenter">
+      results="{{results}}">
     </google-map-search>
 
     <google-map map="{{map}}" latitude="48.863743" longitude="2.344306" api-key="AIzaSyCMwoD7JpzLCf5VRKm1J9u8EPXAnTsLEg0" fit-to-markers>
@@ -101,10 +101,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         Polymer({
             is: 'my-view-main',
             properties: {
-                lastPoll: {
-                    type: Object,
-                    value: null
-                },
+               
                 hideEmpty: {
                     type: Boolean,
                     value: false
@@ -112,8 +109,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
 
             ready: function(){
-               this.refreshLastPoll();
-
                // --- Default settings ---
                this.maxRows = 300;
                this.resultsRadius = 2000;
@@ -121,33 +116,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
 
             isUpdated: function(lastUpdate) {
-              return (new Date(lastUpdate)) >= this.lastPoll ? "update" : "not-update";
-            },
-
-            handleResponse: function() {
-                this.async(function() {
-                    this.$.ajaxCall.generateRequest();
-                    this.refreshLastPoll();
-                }, this.pollingFrequency*1000);
+              return (new Date(lastUpdate)) >= this.lastPoll-150 ? "update" : "not-update";
             },
 
             iconUrl: function(i, lastUpdate) {
-
               var char = i || '!';
                 return this.isUpdated(lastUpdate) == "update" && i > 0 ? 
                     'https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_blue' + char + '.png' : 
                     i ? 'https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_green' + char + '.png' : 
                     null;
-            },
-
-            refreshLastPoll: function(){
-                var d = new Date();
-                d.setSeconds(d.getSeconds()-150);
-                this.lastPoll = d;
-            },
-
-            updateCenter: function () {
-              console.log(this.results);
             },
 
             hideEmptyStation: function(n) {
