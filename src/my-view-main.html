@@ -13,7 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/google-map/google-map.html">
 <link rel="import" href="shared-styles.html">
 
-<dom-module id="my-view1">
+<dom-module id="my-view-main">
     <template>
     <style include="shared-styles">
       :host {
@@ -24,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       google-map {
         height: 100vh;
       }
+
       google-map-marker.update{
         transition: 0.5s;
         transform: scale(2,2);
@@ -98,7 +99,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script>
         Polymer({
-            is: 'my-view1',
+            is: 'my-view-main',
             properties: {
                 lastPoll: {
                     type: Object,
