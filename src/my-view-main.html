@@ -9,7 +9,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
 <link rel="import" href="../bower_components/iron-polling/iron-polling.html">
 <link rel="import" href="shared-styles.html">
@@ -38,12 +37,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         right: 1.3rem;
       }
 
+      .empty{
+        display: none;
+      }
+
     </style>
 
     <iron-polling
       url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&rows={{maxRows}}&facet=status&geofilter.distance=48.863743%2C2.344306%2C{{resultsRadius}}"
       last-response="{{ajaxResponse}}"
-      on-response=""
+      on-response="responseReceived"
       polling-frequency="{{pollingFrequency}}"
       handle-as="json">
     </iron-polling>
@@ -55,11 +58,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       results="{{results}}">
     </google-map-search>
 
-    <google-map map="{{map}}" latitude="48.863743" longitude="2.344306" api-key="AIzaSyCMwoD7JpzLCf5VRKm1J9u8EPXAnTsLEg0" fit-to-markers>
+    <google-map map="{{map}}" latitude="48.863743" longitude="2.344306" 
+      api-key="AIzaSyCMwoD7JpzLCf5VRKm1J9u8EPXAnTsLEg0"
+      zoom="14" fit-to-markers>
         <template is="dom-repeat" items="[[ajaxResponse.records]]">
           <google-map-marker
             icon="{{iconUrl(item.fields.available_bike_stands,item.fields.last_update)}}"
             latitude="[[item.fields.position.0]]"
+            class="{{emptyClass(item.fields.available_bike_stands)}}"
             hidden$="[[hideEmptyStation(item.fields.available_bike_stands)]]"
             longitude="[[item.fields.position.1]]">
 
@@ -102,21 +108,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             is: 'my-view-main',
             properties: {
                
-                hideEmpty: {
-                    type: Boolean,
-                    value: false
-                }
             },
 
             ready: function(){
                // --- Default settings ---
-               this.maxRows = 300;
-               this.resultsRadius = 2000;
+               this.maxRows = 210;
+               this.resultsRadius = 10000;
                this.pollingFrequency = 5;
             },
 
             isUpdated: function(lastUpdate) {
-              return (new Date(lastUpdate)) >= this.lastPoll-150 ? "update" : "not-update";
+              return (new Date(lastUpdate)) >= (this.lastPoll-150000) ? "update" : "not-update";
             },
 
             iconUrl: function(i, lastUpdate) {
@@ -139,6 +141,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             toggleCollapse: function() {
               this.$.collapse.toggle();
               this.$.toggleButton.icon = this.$.toggleButton.icon == "drop-down" ? "drop-up" : "drop-down";
+            },
+
+            responseReceived: function(){
+              this.lastPoll = new Date();
+            }, 
+
+            emptyClass: function(nb){
+              return nb == 0 ? "empty" : "";
             }
 
         });
