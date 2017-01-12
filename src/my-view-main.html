@@ -14,6 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/google-map/google-map-marker.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
 <link rel="import" href="../bower_components/iron-polling/iron-polling.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="my-view-main">
@@ -56,6 +57,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&rows={{maxRows}}&facet=status&geofilter.distance={{lat}}%2C{{long}}%2C{{resultsRadius}}"
       last-response="{{ajaxResponse}}"
       on-response="responseReceived"
+      status="{{currentStatus}}"
       polling-frequency="{{pollingFrequency}}"
       handle-as="json">
     </iron-polling>
@@ -92,9 +94,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div class="card top text-center">
       <paper-spinner active></paper-spinner>
-      <p id="msg-loading">Chargement</p>
-      <p id="msg-waiting">En attente</p>
-      <p id="msg-reloaded">Données rechargées</p>     
+      <p id="msg-loading">{{currentStatus}}</p>
     </div>
 
     <div class="card bottom max-width-280">
@@ -121,20 +121,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <paper-icon-button icon="drop-down" class="float-right" on-click="toggleCollapse" id="toggleButton"></paper-icon-button>
       
     </div>
+
+    <paper-toast id="toast0" text="Données mises à jour"></paper-toast>
+
   </template>
 
   <script>
       Polymer({
           is: 'my-view-main',
           properties: {
-             
+             currentStatus: {
+                type: String,
+                observer: '_currentStatusChanged'
+             }
           },
 
           ready: function(){
              // --- Default settings ---
-            this.maxRows = 210;
+            this.maxRows = 5;
             this.resultsRadius = 10000;
-            this.pollingFrequency = 5;
+            this.pollingFrequency = 10;
             this.mapCenterSearch = "Musée du Louvre";
             this.lat = 48.8;
             this.long = 2.3;
@@ -168,6 +174,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           responseReceived: function(){
             console.log('searchResults', this.searchResults);
+            this.$.toast0.open();
             this.lastPoll = new Date();
           }, 
 
@@ -183,6 +190,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this.lat = this.searchResults[0].latitude;
               this.long = this.searchResults[0].longitude;
             } 
+          },
+
+          _currentStatusChanged: function(){
+            console.log("currentStatus", this.currentStatus )
           }
 
       });
