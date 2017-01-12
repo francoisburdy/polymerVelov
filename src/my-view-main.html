@@ -41,12 +41,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         right: 1.3rem;
       }
 
-      .card.top {
-        position: fixed;
-        top: 0.5rem;
-        right: 1.3rem;
-      }
-
       .empty{
         display: none;
       }
@@ -57,7 +51,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&rows={{maxRows}}&facet=status&geofilter.distance={{lat}}%2C{{long}}%2C{{resultsRadius}}"
       last-response="{{ajaxResponse}}"
       on-response="responseReceived"
-      status="{{currentStatus}}"
       polling-frequency="{{pollingFrequency}}"
       handle-as="json">
     </iron-polling>
@@ -90,12 +83,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </google-map-marker>
         </template>
     </google-map>
-
-
-    <div class="card top text-center">
-      <paper-spinner active></paper-spinner>
-      <p id="msg-loading">{{currentStatus}}</p>
-    </div>
 
     <div class="card bottom max-width-280">
 
@@ -130,10 +117,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       Polymer({
           is: 'my-view-main',
           properties: {
-             currentStatus: {
-                type: String,
-                observer: '_currentStatusChanged'
-             }
+             
           },
 
           ready: function(){
@@ -191,10 +175,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this.long = this.searchResults[0].longitude;
             } 
           },
-
-          _currentStatusChanged: function(){
-            console.log("currentStatus", this.currentStatus )
-          }
 
       });
   </script>
