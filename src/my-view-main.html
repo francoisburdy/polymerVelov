@@ -10,6 +10,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/google-map/google-map-search.html">
+<link rel="import" href="../bower_components/google-map/google-map-marker.html">
 <link rel="import" href="../bower_components/iron-polling/iron-polling.html">
 <link rel="import" href="shared-styles.html">
 
@@ -44,7 +46,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <iron-polling
-      url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&rows={{maxRows}}&facet=status&geofilter.distance=48.863743%2C2.344306%2C{{resultsRadius}}"
+      url="https://opendata.paris.fr/api/records/1.0/search/?dataset=stations-velib-disponibilites-en-temps-reel&rows={{maxRows}}&facet=status&geofilter.distance={{lat}}%2C{{long}}%2C{{resultsRadius}}"
       last-response="{{ajaxResponse}}"
       on-response="responseReceived"
       polling-frequency="{{pollingFrequency}}"
@@ -53,12 +55,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
    
     
     <google-map-search 
+      global-search="true"
       map="[[map]]" 
       query="{{mapCenterSearch}}" 
-      results="{{results}}">
+      results="{{searchResults}}">
     </google-map-search>
 
-    <google-map map="{{map}}" latitude="48.863743" longitude="2.344306" 
+    <google-map 
+      id="idMap"
+      map="{{map}}" latitude="" longitude="" 
       api-key="AIzaSyCMwoD7JpzLCf5VRKm1J9u8EPXAnTsLEg0"
       zoom="14" fit-to-markers>
         <template is="dom-repeat" items="[[ajaxResponse.records]]">
@@ -81,9 +86,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <iron-collapse id="collapse" opened>
       <div>
-        <paper-input label="Point central des résultats" value="{{mapCenterSearch}}" type="number" class="full-width">
+        <paper-input label="Point central des résultats" value="{{mapCenterSearch}}" class="full-width">
           <iron-icon icon="my-location" prefix></iron-icon>
         </paper-input>
+        <p>{{mapCenterSearch}}</p>
         <paper-input label="Rayon des résultats (m)" value="{{resultsRadius}}" type="number" min=30 max=20000 class="full-width">
           <iron-icon icon="radius" prefix></iron-icon>
         </paper-input>
@@ -107,7 +113,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         Polymer({
             is: 'my-view-main',
             properties: {
-               
+               searchResults: {
+                type: Object,
+                observer: '_searchResultsUpdate'
+              }
             },
 
             ready: function(){
@@ -115,6 +124,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                this.maxRows = 210;
                this.resultsRadius = 10000;
                this.pollingFrequency = 5;
+
+               this.mapCenterSearch = "gare de lyon";
             },
 
             isUpdated: function(lastUpdate) {
@@ -149,6 +160,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             emptyClass: function(nb){
               return nb == 0 ? "empty" : "";
+            },
+
+            _searchResultsUpdate: function(){
+              console.log('searchResults', this.searchResults);
+              if(this.searchResults[0]){
+                this.$.idMap.longitude = this.searchResults[0].longitude;
+                this.$.idMap.latitude = this.searchResults[0].latitude;
+                this.lat = this.searchResults[0].latitude;
+                this.long = this.searchResults[0].longitude;
+                return;
+              } 
+
+              this.$.idMap.latitude = 48.863743;
+              this.$.idMap.longitude = 2.344306;
             }
 
         });
